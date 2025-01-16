@@ -20,6 +20,10 @@ requirements:
 
 
 
+## build the current docker project
+build:
+	docker compose up
+
 ## Delete all compiled Python files
 .PHONY: clean
 clean:

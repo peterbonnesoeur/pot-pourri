@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  pyspark-iceberg:
+    build:
+      context: pyspark
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"  # Jupyter Notebook
+      - "4040:4040"  # Spark UI
+    volumes:
+      - .:/workspace  # Mount current directory into container
+    environment:
+      - SPARK_HOME=/opt/spark
+      - PATH=/opt/spark/bin:$PATH
+    command: tail -f /dev/null  # Keep the container running

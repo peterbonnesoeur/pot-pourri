@@ -1,0 +1,46 @@
+# Use the official Python base image
+FROM python:3.11
+
+# Set environment variables
+ENV PYSPARK_VERSION=3.5.3 \
+    HADOOP_VERSION=3 \
+    ICEBERG_VERSION=1.7.1 \
+    SPARK_HOME=/opt/spark \
+    PATH="$SPARK_HOME/bin:$PATH"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jdk-headless \
+    wget \
+    curl \
+    bash \
+    git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PySpark and Jupyter
+RUN pip install --no-cache-dir \
+    pyspark==$PYSPARK_VERSION \
+    jupyter \
+    notebook \
+    findspark
+
+# Download and setup Spark
+RUN wget https://downloads.apache.org/spark/spark-$PYSPARK_VERSION/spark-$PYSPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz -P /tmp && \
+    tar -xzf /tmp/spark-$PYSPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz -C /opt && \
+    mv /opt/spark-$PYSPARK_VERSION-bin-hadoop$HADOOP_VERSION $SPARK_HOME && \
+    rm /tmp/spark-$PYSPARK_VERSION-bin-hadoop$HADOOP_VERSION.tgz
+
+# Download Iceberg Spark runtime JAR
+RUN mkdir -p $SPARK_HOME/jars && \
+    wget https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/$ICEBERG_VERSION/iceberg-spark-runtime-3.5_2.12-$ICEBERG_VERSION.jar -P $SPARK_HOME/jars
+    
+# Set the default working directory
+WORKDIR /workspace
+
+# # Expose Jupyter port
+# EXPOSE 8888
+
+# # # Copy entrypoint script for Jupyter
+# COPY entrypoint.sh /entrypoint.sh
+# RUN chmod +x /entrypoint.sh
+
